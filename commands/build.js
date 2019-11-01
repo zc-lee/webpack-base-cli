@@ -1,9 +1,12 @@
 
 const webpack = require("webpack")
-const config = require('../webpack/webpack.prod')
+const config = require('../lib/config')
 
-function run() {
-    webpack(config, (err, stats) => {
+function runBuild(name) {
+    let command = `build ${name}`
+    // config(name)
+    let loading = require('lzc-doing')({ text: command }).start(`${command} start...`)
+    webpack(config(name), (err, stats) => {
         if (err) {
             loading.fail(`${command} fail!!!`)
             throw err
@@ -13,6 +16,7 @@ function run() {
 }
 
 module.exports = async (params) => {
-    let loading = require('lzc-doing')({ text: command }).start(`${command} start...`)
-    run()
+    require('../lib/pages').getEntrys(params).forEach(v => {
+        runBuild(v)
+    })
 }

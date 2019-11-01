@@ -13,7 +13,7 @@ if (!command) {
 }
 
 if (!commands[command] && command) {
-    throwError(`command ${command} does not exist.`)
+    echo.err(`command ${command} does not exist.`)
     process.exit(1)
 }
 

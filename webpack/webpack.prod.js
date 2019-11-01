@@ -1,5 +1,12 @@
 const merge = require('webpack-merge')
-const config = require('./webpack.config')
-module.exports = merge(config, {
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
+const config = require('./webpack.base')
+const { build: { devtool } } = require('./webpack.config')
+module.exports = merge(config, {
+    mode: 'production',
+    devtool,
+    plugins:[
+        new CleanWebpackPlugin()
+    ]
 })

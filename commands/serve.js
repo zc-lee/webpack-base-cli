@@ -1,12 +1,15 @@
 const webpack = require("webpack")
 const WebpackDevServer = require('webpack-dev-server');
-const config =require('../webpack/webpack.dev')
+const config = require('../lib/config')
 
-module.exports = async (params) => {
-    console.log(process.env.NODE_ENV)
+function runBuild(name) {
+    let compiler = config(name, false)
+    let server = new WebpackDevServer(webpack(compiler), compiler.devServer)
+    server.listen(compiler.devServer.port, compiler.devServer.host)
+}
 
-    // const config = await require('../config')(params)
-    // const server = new WebpackDevServer(webpack(config), devServer)
-    // // server.listen(devServer.port,devServer.host)
-    // server.listen(devServer.port,'0.0.0.0')
+module.exports = (params) => {
+    require('../lib/pages').getEntrys(params).forEach(v => {
+        runBuild(v)
+    })
 }
