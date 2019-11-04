@@ -1,9 +1,10 @@
 module.exports = {
+    pagesDir: './pages',
     base: {
-        pagesDir: './pages',
+        baseUrl:'./',
         entry: 'index.js',
         outputDir: 'build',
-        outputFileName: "[id]-[name]-[hash].js",
+        outputFileName: "[id]-[name]-[hash:8].js",
         templatePath: "index.html",
         htmlMinify: {
             // 注释
@@ -38,10 +39,15 @@ module.exports = {
         devtool: false,
     },
     babel: {
-        preset: [
-            ["env", { modules: false }]
+        presets: [
+            ['@babel/preset-env']
+            // ["env", { modules: false }]
         ],
-        plugins: ["syntax-dynamic-import", "transform-object-reset-spread"]
+        plugins: [
+            // 避免多次编译出helper函数
+            "@babel/plugin-transform-runtime"
+        ]
+        // plugins: ["syntax-dynamic-import", "transform-object-reset-spread"]
     },
     resolve: {
         extensions: ['.js', '.jsx', '.json', '.vue'],
@@ -52,7 +58,6 @@ module.exports = {
         modules: ['node_modules'],
     },
     rules: [
-
     ],
     plugins: [
     ]

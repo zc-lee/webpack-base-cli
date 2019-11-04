@@ -18,6 +18,5 @@ if (!commands[command] && command) {
 }
 
 delete args._
-// console.log(args)
-
+// process.env._args = JSON.stringify(args)
 require(commands[command])(args)

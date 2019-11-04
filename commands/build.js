@@ -1,12 +1,12 @@
 
 const webpack = require("webpack")
-const config = require('../lib/config')
+const config = require('../config')
 
 function runBuild(name) {
     let command = `build ${name}`
-    // config(name)
+    let compiler = config(name)
     let loading = require('lzc-doing')({ text: command }).start(`${command} start...`)
-    webpack(config(name), (err, stats) => {
+    webpack(compiler, (err, stats) => {
         if (err) {
             loading.fail(`${command} fail!!!`)
             throw err
