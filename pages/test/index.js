@@ -1,8 +1,6 @@
 var img1 = require('./assets/test.jpeg');
 img_box1.src = img1;
-// img_box1.src = 'https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/logo_redBlue_32fe2c69.png';
 
-console.log('asdf123456789')
 console.log(process.env.NODE_ENV)
 let func = async () => {
     if (!Array.prototype.flat) {
@@ -14,12 +12,6 @@ let func = async () => {
         setTimeout(() => {
             console.log('=>')
             let arr = [1, [2, [3]]]
-            // childs = childs.reduce((acc, val) => {
-            //     console.log(acc)
-            //     console.log(val)
-            //     return acc.concat(val)
-            // }, [])
-            // console.log(childs)
             console.log(arr.flat(Infinity))
             resolve()
         }, 2000);

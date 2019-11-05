@@ -2,7 +2,8 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const OptimizeCssPlugin = require('optimize-css-assets-webpack-plugin')
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const webpack = require("webpack")
 const merge = require('webpack-merge')
 
 // vue
@@ -41,34 +42,49 @@ module.exports = (key, isProd = true, isBuild = true) => {
                 {
                     test: /\.m?jsx?$/,
                     exclude: /node_modules/,
-                    use: [{
-                        loader: 'babel-loader',
-                        options: babel
-                    }]
+                    use: [
+                        { loader: 'cache-loader' },
+                        {
+                            loader: 'babel-loader',
+                            options: babel
+                        }]
                 },
                 {
                     test: /\.vue$/,
-                    use: [{
-                        loader: "vue-loader",
-                        options: {
-                            loaders: {
-                                js: [
-                                    {
-                                        loader: 'babel-loader',
-                                        options: babel
-                                    }
-                                ]
+                    use: [
+                        { loader: 'cache-loader' },
+                        {
+                            loader: "vue-loader",
+                            options: {
+                                loaders: {
+                                    js: [
+                                        {
+                                            loader: 'babel-loader',
+                                            options: babel
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    }]
+                        }]
                 },
-                //  {
-                //     test: /\.css$/,
-                //     use: ExtractTextPlugin.extract({
-                //         fallback: "style-loader",
-                //         use: "css-loader"
-                //     })
-                // }, 
+                {
+                    test: /\.css$/,
+                    // use: [
+                    //     { loader: 'style-loader' },
+                    //     {
+                    //         loader: 'css-loader',
+                    //         options: {
+                    //             modules: true
+                    //         }
+                    //     }
+                    // ]
+                    use: ExtractTextPlugin.extract({
+                        fallback: "style-loader",
+                        use: [
+                            { loader: 'css-loader' }
+                        ]
+                    })
+                },
                 // {
                 //     test: /\.(jpe?g|png|gif|webp|ttf|woff|eot|svg)$/,
                 //     use: [
@@ -84,7 +100,24 @@ module.exports = (key, isProd = true, isBuild = true) => {
                 //     ]
                 // },
                 {
-                    test: /\.(jpe?g|png|gif|webp|ttf|woff|eot|svg)$/,
+                    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
+                    use: [
+                        {
+                            loader: 'url-loader',
+                            options: {
+                                limit: 4096,
+                                fallback: {
+                                    loader: 'file-loader',
+                                    options: {
+                                        name: 'fonts/[name].[hash:8].[ext]'
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(jpe?g|png|gif|webp)$/,
                     use: [{
                         loader: 'url-loader',
                         options: {
@@ -93,17 +126,45 @@ module.exports = (key, isProd = true, isBuild = true) => {
                                 loader: 'file-loader',
                                 options: {
                                     // name: 'static/img/[name].[hash:8].[ext]',
-                                    name: '[name].[hash:8].[ext]',
-                                    outputPath: 'img/' // 后面的/不能少
+                                    name: 'img/[name].[hash:8].[ext]',
+                                    // outputPath: 'img/' // 后面的/不能少
                                 }
                             }
                         }
                     }]
                 },
-                // {
-                //     test: /\.html$/,
-                //     use: ["html-loader"]
-                // }
+                {
+                    test: /\.(svg)(\?.*)?$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: 'img/[name].[hash:8].[ext]'
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+                    use: [
+                        {
+                            loader: 'url-loader',
+                            options: {
+                                limit: 4096,
+                                fallback: {
+                                    loader: 'file-loader',
+                                    options: {
+                                        name: 'media/[name].[hash:8].[ext]'
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.html$/,
+                    use: ["html-loader"]
+                }
             ]
         },
         plugins: [
@@ -123,12 +184,18 @@ module.exports = (key, isProd = true, isBuild = true) => {
             //     to: './', // 打包后静态文件放置位置
             //     ignore: ['.*'] // 忽略规则。（这种写法表示将该文件夹下的所有文件都复制）
             // }]),
-            // new ExtractTextPlugin({
-            //     filename: 'css/[name].css',
-            //     allChunks: true
-            // })
-
-            new VueLoaderPlugin()
+            new VueLoaderPlugin(),
+            new ExtractTextPlugin({
+                filename: baseUrl + 'css/[name]-[hash:8].css',
+                allChunks: true
+            }),
+            new OptimizeCssAssetsPlugin({
+                cssProcessor: require('cssnano'),
+                cssProcessorPluginOptions: {
+                    preset: ['default', { discardComments: { removeAll: true } }],
+                },
+                canPrint: true
+            })
         ]
     },
         dev = {
@@ -157,14 +224,21 @@ module.exports = (key, isProd = true, isBuild = true) => {
             }
         },
         prod = {
-            mode: 'production',
+            // mode: 'production',
+            mode: 'development',
             devtool,
             plugins: [
                 new CleanWebpackPlugin()
             ]
         }
     let config = merge(base, isProd ? prod : dev)
-    process.env.NODE_ENV = config.mode
+
+    config.plugins.push(new webpack.DefinePlugin({
+        'process.env': {
+            NODE_ENV: JSON.stringify(config.mode),
+            BASE_URL: '""'
+        }
+    }))
 
     return config
 }

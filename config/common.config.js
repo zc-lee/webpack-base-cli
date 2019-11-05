@@ -4,7 +4,7 @@ module.exports = {
         baseUrl:'./',
         entry: 'index.js',
         outputDir: 'build',
-        outputFileName: "[id]-[name]-[hash:8].js",
+        outputFileName: "[name]-[hash:8].js",
         templatePath: "index.html",
         htmlMinify: {
             // 注释
